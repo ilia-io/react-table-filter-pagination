@@ -1,89 +1,159 @@
 import { useState } from 'react';
-import './App.css';
+import './App.scss';
 import { FaArrowUp, FaArrowDown } from 'react-icons/fa';
 import { faker } from 'https://cdn.skypack.dev/@faker-js/faker';
+import Filter from './components/Filter';
+import Dropdown from './components/Dropdown';
 
-const USERS = [];
+const columns = [
+  { name: 'дата' },
+  { name: 'название' },
+  { name: 'количество' },
+  { name: 'дистанция' },
+];
 
-function createRandomUser() {
+const condition = [
+  { name: 'содержит' },
+  { name: '=' },
+  { name: '>' },
+  { name: '<' },
+];
+
+const PRODUCTS = [];
+
+function createRandomItem() {
   return {
     id: faker.datatype.uuid(),
-    date: faker.date.recent(180).toLocaleDateString(),
+    date: faker.date.recent(360),
     name: faker.commerce.productName(),
     amount: faker.datatype.number(100),
-    distance: faker.datatype.number(),
+    distance: faker.datatype.number(900000),
   };
 }
 
 Array.from({ length: 40 }).forEach(() => {
-  USERS.push(createRandomUser());
+  PRODUCTS.push(createRandomItem());
 });
 
 function App() {
-  const [users, setUsers] = useState(USERS);
+  const [items, setItems] = useState(PRODUCTS);
   const [sorted, setSorted] = useState({ sorted: 'name', reversed: false });
   const [searchText, setSearchText] = useState('');
+  const [columnState, setColumnState] = useState(columns[0].name);
+  const [conditionState, setConditionState] = useState(condition[0].name);
+  const [conditionInput, setConditionInput] = useState('');
+
+  function filterItems() {
+    const input = conditionInput.trim();
+    if (conditionState === '=') {
+      const filteredItems = PRODUCTS.filter((item) => {
+        console.log(item.amount, input);
+        return columnState === 'дата'
+          ? item.date.setHours(0, 0, 0, 0) === compareDate(input).getTime()
+          : columnState === 'название'
+          ? item.name.toLowerCase() === input.trim().toLowerCase()
+          : columnState === 'количество'
+          ? item.amount == input
+          : item.distance == input;
+      });
+      setItems(filteredItems);
+    } else if (conditionState === '>') {
+      const filteredItems = PRODUCTS.filter((item) => {
+        return columnState === 'дата'
+          ? item.date.setHours(0, 0, 0, 0) > compareDate(input).getTime()
+          : columnState === 'название'
+          ? item.name.toLowerCase() > input.toLowerCase()
+          : columnState === 'количество'
+          ? item.amount > input
+          : item.distance > input;
+      });
+      setItems(filteredItems);
+    } else if (conditionState === '<') {
+      const filteredItems = PRODUCTS.filter((item) => {
+        return columnState === 'дата'
+          ? item.date.setHours(0, 0, 0, 0) < compareDate(input).getTime()
+          : columnState === 'название'
+          ? item.name.toLowerCase() < input.toLowerCase()
+          : columnState === 'количество'
+          ? item.amount < input
+          : item.distance < input;
+      });
+      setItems(filteredItems);
+    } else if (conditionState === 'содержит') {
+      const filteredItems = PRODUCTS.filter((item) => {
+        return columnState === 'дата'
+          ? item.date
+              .toLocaleDateString()
+              .toLowerCase()
+              .includes(input.toLowerCase())
+          : columnState === 'название'
+          ? item.name.toLowerCase().includes(input.toLowerCase())
+          : columnState === 'количество'
+          ? item.amount.toString().toLowerCase().includes(input.toLowerCase())
+          : item.distance
+              .toString()
+              .toLowerCase()
+              .includes(input.toLowerCase());
+      });
+      setItems(filteredItems);
+    }
+  }
+
+  function compareDate(value) {
+    const dt = parseInt(value.substring(0, 2));
+    const mon = parseInt(value.substring(3, 5));
+    const yr = parseInt(value.substring(6, 10));
+    const date = new Date(yr, mon - 1, dt);
+    return date;
+  }
 
   const sortByName = () => {
-    const usersCopy = [...users];
-    usersCopy.sort((userA, userB) => {
-      const fullNameA = userA.name;
-      const fullNameB = userB.name;
+    const itemsCopy = [...items];
+    itemsCopy.sort((itemA, itemB) => {
+      const fullNameA = itemA.name;
+      const fullNameB = itemB.name;
       if (sorted.reversed) {
         return fullNameB.localeCompare(fullNameA);
       }
       return fullNameA.localeCompare(fullNameB);
     });
-    setUsers(usersCopy);
+    setItems(itemsCopy);
     setSorted({ sorted: 'name', reversed: !sorted.reversed });
   };
 
   const sortByAmount = () => {
-    const usersCopy = [...users];
-    usersCopy.sort((userA, userB) => {
+    const itemsCopy = [...items];
+    itemsCopy.sort((itemA, itemB) => {
       if (sorted.reversed) {
-        return userA.amount - userB.amount;
+        return itemA.amount - itemB.amount;
       }
-      return userB.amount - userA.amount;
+      return itemB.amount - itemA.amount;
     });
-    setUsers(usersCopy);
+    setItems(itemsCopy);
     setSorted({ sorted: 'amount', reversed: !sorted.reversed });
   };
 
   const sortByDistance = () => {
-    const usersCopy = [...users];
-    usersCopy.sort((userA, userB) => {
+    const itemsCopy = [...items];
+    itemsCopy.sort((itemA, itemB) => {
       if (sorted.reversed) {
-        return userA.distance - userB.distance;
+        return itemA.distance - itemB.distance;
       }
-      return userB.distance - userA.distance;
+      return itemB.distance - itemA.distance;
     });
-    setUsers(usersCopy);
+    setItems(itemsCopy);
     setSorted({ sorted: 'distance', reversed: !sorted.reversed });
   };
 
   const search = (event) => {
-    const matchedUsers = USERS.filter((user) => {
-      return `${user.date}${user.name}${user.amount}${user.distance}`
+    const matchedItems = PRODUCTS.filter((item) => {
+      return `${item.date}${item.name}${item.amount}${item.distance}`
         .toLowerCase()
         .includes(event.target.value.toLowerCase());
     });
 
-    setUsers(matchedUsers);
+    setItems(matchedItems);
     setSearchText(event.target.value);
-  };
-
-  const renderUsers = () => {
-    return users.map((user) => {
-      return (
-        <tr key={user.id}>
-          <td>{user.date}</td>
-          <td>{user.name}</td>
-          <td>{user.amount}</td>
-          <td>{user.distance}</td>
-        </tr>
-      );
-    });
   };
 
   const renderArrow = () => {
@@ -102,6 +172,31 @@ function App() {
           value={searchText}
           onChange={search}
         />
+      </div>
+      <h2>Фильтрация</h2>
+      <div className="filter-container">
+        <Dropdown
+          columns={columns}
+          condition={condition}
+          columnState={columnState}
+          conditionState={conditionState}
+          setColumnState={setColumnState}
+          setConditionState={setConditionState}
+        />
+        <Filter
+          title={'conditionInput'}
+          placeholder={'Введите значение...'}
+          items={[...items]}
+          conditionInput={conditionInput}
+          setConditionInput={setConditionInput}
+        />
+        <button onClick={filterItems} type="button">
+          Фильтр
+        </button>
+
+        <button onClick={() => setItems(PRODUCTS)} type="button">
+          Сброс
+        </button>
       </div>
       <div className="table-container">
         <table>
@@ -124,7 +219,16 @@ function App() {
               </th>
             </tr>
           </thead>
-          <tbody>{renderUsers()}</tbody>
+          <tbody>
+            {items.map((item) => (
+              <tr key={item.id}>
+                <td>{item.date.toLocaleDateString()}</td>
+                <td>{item.name}</td>
+                <td>{item.amount}</td>
+                <td>{item.distance}</td>
+              </tr>
+            ))}
+          </tbody>
         </table>
       </div>
     </div>
