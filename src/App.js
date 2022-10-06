@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import './App.scss';
 import { FaArrowUp, FaArrowDown } from 'react-icons/fa';
-import { faker } from 'https://cdn.skypack.dev/@faker-js/faker';
+import { faker } from '@faker-js/faker';
 import Filter from './components/Filter';
 import Dropdown from './components/Dropdown';
 import Pagination from './components/Pagination';
@@ -21,7 +21,6 @@ const condition = [
 ];
 
 const PRODUCTS = [];
-
 function createRandomItem() {
   return {
     id: faker.datatype.uuid(),
@@ -39,7 +38,6 @@ Array.from({ length: 100 }).forEach(() => {
 function App() {
   const [items, setItems] = useState(PRODUCTS);
   const [sorted, setSorted] = useState({ sorted: 'name', reversed: false });
-  const [searchText, setSearchText] = useState('');
   const [columnState, setColumnState] = useState(columns[0].name);
   const [conditionState, setConditionState] = useState(condition[0].name);
   const [conditionInput, setConditionInput] = useState('');
@@ -115,7 +113,7 @@ function App() {
     return date;
   }
 
-  const sortByName = () => {
+  function sortByName() {
     const itemsCopy = [...items];
     itemsCopy.sort((itemA, itemB) => {
       const fullNameA = itemA.name;
@@ -127,9 +125,9 @@ function App() {
     });
     setItems(itemsCopy);
     setSorted({ sorted: 'name', reversed: !sorted.reversed });
-  };
+  }
 
-  const sortByAmount = () => {
+  function sortByAmount() {
     const itemsCopy = [...items];
     itemsCopy.sort((itemA, itemB) => {
       if (sorted.reversed) {
@@ -139,9 +137,9 @@ function App() {
     });
     setItems(itemsCopy);
     setSorted({ sorted: 'amount', reversed: !sorted.reversed });
-  };
+  }
 
-  const sortByDistance = () => {
+  function sortByDistance() {
     const itemsCopy = [...items];
     itemsCopy.sort((itemA, itemB) => {
       if (sorted.reversed) {
@@ -151,36 +149,17 @@ function App() {
     });
     setItems(itemsCopy);
     setSorted({ sorted: 'distance', reversed: !sorted.reversed });
-  };
+  }
 
-  const search = (event) => {
-    const matchedItems = PRODUCTS.filter((item) => {
-      return `${item.date}${item.name}${item.amount}${item.distance}`
-        .toLowerCase()
-        .includes(event.target.value.toLowerCase());
-    });
-
-    setItems(matchedItems);
-    setSearchText(event.target.value);
-  };
-
-  const renderArrow = () => {
+  function renderArrow() {
     if (sorted.reversed) {
       return <FaArrowUp />;
     }
     return <FaArrowDown />;
-  };
+  }
 
   return (
     <div className="App">
-      <div className="search-container">
-        <input
-          type="text"
-          placeholder="Поиск..."
-          value={searchText}
-          onChange={search}
-        />
-      </div>
       <h2>Фильтрация</h2>
       <div className="filter-container">
         <Dropdown
@@ -201,7 +180,6 @@ function App() {
         <button onClick={filterItems} type="button">
           Фильтр
         </button>
-
         <button onClick={() => setItems(PRODUCTS)} type="button">
           Сброс
         </button>
@@ -215,7 +193,6 @@ function App() {
           currentPage={currentPage}
         />
       </div>
-
       <div className="table-container">
         <table>
           <thead>

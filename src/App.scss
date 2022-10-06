@@ -42,21 +42,6 @@ tr {
   border-bottom: 1px solid #bbb;
 }
 
-.search-container {
-  margin: 1rem 0;
-  width: 50%;
-  display: flex;
-  justify-content: center;
-}
-
-.search-container input {
-  width: 100%;
-  padding: 10px;
-  font-size: 1rem;
-  outline: none;
-  border: 1px solid #ccc;
-}
-
 .filter-container {
   display: flex;
   justify-content: space-around;
@@ -79,28 +64,6 @@ tr {
   :last-child {
     margin-left: 10px;
   }
-}
-
-label,
-footer {
-  font-family: sans-serif;
-}
-
-label {
-  font-size: 1rem;
-  padding-right: 10px;
-}
-
-select {
-  font-size: .9rem;
-  padding: 2px 5px;
-}
-
-footer {
-  font-size: .8rem;
-  position: absolute;
-  bottom: 30px;
-  left: 30px;
 }
 
 .pagination-container {
