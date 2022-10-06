@@ -4,12 +4,13 @@ import { FaArrowUp, FaArrowDown } from 'react-icons/fa';
 import { faker } from 'https://cdn.skypack.dev/@faker-js/faker';
 import Filter from './components/Filter';
 import Dropdown from './components/Dropdown';
+import Pagination from './components/Pagination';
 
 const columns = [
   { name: 'дата' },
   { name: 'название' },
   { name: 'количество' },
-  { name: 'дистанция' },
+  { name: 'расстояние' },
 ];
 
 const condition = [
@@ -31,7 +32,7 @@ function createRandomItem() {
   };
 }
 
-Array.from({ length: 40 }).forEach(() => {
+Array.from({ length: 100 }).forEach(() => {
   PRODUCTS.push(createRandomItem());
 });
 
@@ -42,12 +43,19 @@ function App() {
   const [columnState, setColumnState] = useState(columns[0].name);
   const [conditionState, setConditionState] = useState(condition[0].name);
   const [conditionInput, setConditionInput] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [postsPerPage] = useState(10);
+
+  const indexOfLastPost = currentPage * postsPerPage;
+  const indexOfFirstPost = indexOfLastPost - postsPerPage;
+  const currentPosts = items.slice(indexOfFirstPost, indexOfLastPost);
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   function filterItems() {
     const input = conditionInput.trim();
+    setCurrentPage(1);
     if (conditionState === '=') {
       const filteredItems = PRODUCTS.filter((item) => {
-        console.log(item.amount, input);
         return columnState === 'дата'
           ? item.date.setHours(0, 0, 0, 0) === compareDate(input).getTime()
           : columnState === 'название'
@@ -198,6 +206,16 @@ function App() {
           Сброс
         </button>
       </div>
+      <div className="pagination-container">
+        {' '}
+        <Pagination
+          postsPerPage={postsPerPage}
+          totalPosts={items.length}
+          paginate={paginate}
+          currentPage={currentPage}
+        />
+      </div>
+
       <div className="table-container">
         <table>
           <thead>
@@ -214,13 +232,13 @@ function App() {
                 {sorted.sorted === 'amount' ? renderArrow() : null}
               </th>
               <th onClick={sortByDistance}>
-                <span style={{ marginRight: 10 }}>Дистанция</span>
+                <span style={{ marginRight: 10 }}>Расстояние</span>
                 {sorted.sorted === 'distance' ? renderArrow() : null}
               </th>
             </tr>
           </thead>
           <tbody>
-            {items.map((item) => (
+            {currentPosts.map((item) => (
               <tr key={item.id}>
                 <td>{item.date.toLocaleDateString()}</td>
                 <td>{item.name}</td>
